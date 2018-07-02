@@ -34,8 +34,19 @@ class Weibo:
     # 获取用户昵称
     def get_username(self):
         try:
-            url = "https://weibo.cn/%d/info" % (self.user_id)
-            html = requests.get(url, cookies=self.cookie).content
+            url = "https://weibo.cn/%d/info" % self.user_id
+            # headers = {
+            #     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:12.0) '
+            #                   'Gecko/20100101 Firefox/12.0',
+            #     'From': 'arfu.guo@gmail.com'  # This is another valid field
+            # }
+            # html = requests.get(url, cookies=self.cookie,
+            #                     headers=headers).content
+            session = requests.Session()
+            custom_user_agent = ('Mozilla/5.0 (X11; Linux x86_64; rv:12.0) '
+                                 'Gecko/20100101 Firefox/12.0'),
+            session.headers.update({'User-Agent': custom_user_agent})
+            html = session.get(url, cookies=self.cookie).content
             selector = etree.HTML(html)
             username = selector.xpath("//title/text()")[0]
             self.username = username[:-3]
@@ -57,9 +68,15 @@ class Weibo:
             str_wb = selector.xpath(
                 "//div[@class='tip2']/span[@class='tc']/text()")[0]
             guid = re.findall(pattern, str_wb, re.S | re.M)
+            # re.S | re.M: flags
+            # https://www.tutorialspoint.com/python/python_reg_expressions.htm
+
             for value in guid:
                 num_wb = int(value)
                 break
+            else:
+                num_wb = 0
+
             self.weibo_num = num_wb
             print("微博数: " + str(self.weibo_num))
 
@@ -79,6 +96,11 @@ class Weibo:
         except Exception as e:
             print("Error: ", e)
             traceback.print_exc()
+            # https://docs.python.org/3/library/traceback.html
+            # When a function is called, the address of the next instruction is
+            # pushed onto the stack.
+            # When the function exits, the address is popped off the stack and
+            # execution continues at that address.
 
     # 获取"长微博"全部文字内容
     def get_long_weibo(self, weibo_link):
@@ -282,8 +304,9 @@ def main():
     try:
         # 使用实例,输入一个用户id，所有信息都会存储在wb实例中
         user_id = 1054009064  # 可以改成任意合法的用户id（爬虫的微博id除外）
-        filter = 1  # 值为0表示爬取全部微博（原创微博+转发微博），值为1表示只爬取原创微博
-        wb = Weibo(user_id, filter)  # 调用Weibo类，创建微博实例wb
+        filter_origin = 1
+        # 值为0表示爬取全部微博（原创微博+转发微博），值为1表示只爬取原创微博
+        wb = Weibo(user_id, filter_origin)  # 调用Weibo类，创建微博实例wb
         wb.start()  # 爬取微博信息
         print("用户名: " + wb.username)
         print("全部微博数: " + str(wb.weibo_num))
