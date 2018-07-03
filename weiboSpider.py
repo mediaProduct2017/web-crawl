@@ -124,10 +124,11 @@ class Weibo:
                 self.user_id, self.filter)
             html = requests.get(url, cookies=self.cookie).content
             selector = etree.HTML(html)
-            if selector.xpath("//input[@name='mp']") == []:
+            if selector.xpath("//input[@name='mp']"):
+                # selector.xpath("//input[@name='mp']") == []
                 page_num = 1
             else:
-                page_num = (int)(selector.xpath(
+                page_num = int(selector.xpath(
                     "//input[@name='mp']")[0].attrib["value"])
             pattern = r"\d+\.?\d*"
             for page in range(1, page_num + 1):
@@ -243,8 +244,7 @@ class Weibo:
                 print("共" + str(self.weibo_num2) + "条微博")
             else:
                 print("共" + str(self.weibo_num) + "条微博，其中" +
-                       str(self.weibo_num2) + "条为原创微博"
-                       )
+                      str(self.weibo_num2) + "条为原创微博")
         except Exception as e:
             print("Error: ", e)
             traceback.print_exc()
