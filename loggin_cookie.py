@@ -7,6 +7,7 @@
 """
 import sys
 import traceback
+import logging
 
 import dryscrape
 import requests
@@ -90,6 +91,5 @@ class NetTour:
             username = selector.xpath("//title/text()")[0]
             self.username = username[:-3]
             print("User name: " + self.username)
-        except Exception as e:
-            print("Error: ", e)
-            traceback.print_exc()
+        except Exception:
+            logging.exception("message")
